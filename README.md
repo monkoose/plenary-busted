@@ -12,6 +12,22 @@ Changes from test harness of plenary.nvim:
 
 ---
 
+### Installation
+
+With vim.pack (Neovim 0.12+):
+
+```lua
+vim.pack.add({ 'https://github.com/monkoose/plenary-busted' })
+```
+
+With [lazy.nvim](https://github.com/folke/lazy.nvim):
+
+```lua
+{ 'monkoose/plenary-busted' },
+```
+
+---
+
 ### Usage
 
 Supports (simple) busted-style testing. It implements a mock-ed busted interface, that will allow you to run simple
@@ -27,6 +43,8 @@ or in lua
 ```lua
 vim.keymap.set('n', '<leader>t', '<Plug>PlenaryBustedFile')
 ```
+
+or use `:PlenaryBustedFile` command
 
 In this case, the test is run with a minimal configuration, that includes in
 its runtimepath only `plenary-busted` and the current working directory.
