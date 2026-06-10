@@ -1,10 +1,8 @@
-# plenary-busted
-
----
+<h1 align="center">plenary-busted</h1>
 
 Extracted test harness from [plenary.nvim]
 
-It was cleaned up from the legacy dependencies of [plenary.nvim], like Job, Path etc.
+It was cleaned of the legacy dependencies of [plenary.nvim], like Job, Path etc.
 
 Changes from test harness of plenary.nvim:
 - Added summary for test results
