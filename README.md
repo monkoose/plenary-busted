@@ -90,6 +90,78 @@ To configure winbar highlights you can change these groups:
 
 ---
 
+### FAQ
+
+<details>
+<summary>How to use it to test your plugin with GitHub Actions?</summary>
+
+Create `Makefile` in your plugin's root directory:
+
+```make
+test:
+	nvim --headless -c "PlenaryBustedDirectory tests { keep_going = false }"
+```
+
+Or you can omit creating `Makefile` and use `nvim --headless -c "PlenaryBustedDirectory tests { keep_going = false }"`
+directly in the `tests.yml`.
+
+Create `.github/workflows/tests.yml` (adjust `nvim-version` for your plugin requirements):
+
+```yaml
+name: Tests
+
+on: [ push, pull_request ]
+
+jobs:
+  tests:
+    name: unit tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        nvim-version: [ v0.11.0, stable, nightly ]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: ${{ matrix.nvim-version }}
+      - name: Install plenary-busted plugin
+        run: |
+          git clone --depth=1 https://github.com/monkoose/plenary-busted ~/.local/share/nvim/site/pack/test-workflow/start/plenary-busted
+      - name: Run tests
+        run: |
+          nvim --version
+          make test
+```
+
+</details>
+
+<details>
+<summary>How to make Lua LSP know about `plenary-busted` (to fix diagnostics warnings)?</summary>
+
+Create `.luarc.json` in your plugin's root directory:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
+  "runtime.version": "LuaJIT",
+  "diagnostics.globals": [ "clear" ],
+  "workspace": {
+    "library": [
+      "lua",
+      "$VIMRUNTIME/lua",
+      "${3rd}/busted/library",
+      "${3rd}/luassert/library"
+    ],
+    "checkThirdParty": false
+  }
+}
+```
+
+</details>
+
+---
+
 ### TODO
 
 - [ ] Populate quickfix list with failed tests
