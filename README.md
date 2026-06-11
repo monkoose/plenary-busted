@@ -81,6 +81,13 @@ Supported busted items are:
 - `clear`
 - `assert.*` etc. (from luassert, which is bundled)
 
+### Highlights
+
+To configure winbar highlights you can change these groups:
+- `PlenaryBustedWhite`
+- `PlenaryBustedGreen`
+- `PlenaryBustedRed`
+
 ---
 
 ### TODO

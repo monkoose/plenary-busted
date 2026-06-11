@@ -83,6 +83,15 @@ COMMANDS                                              *plenary-busted-commands*
   {options} is a table, see |plenary-busted-usage|.
 
 
+HIGHLIGHTS                                          *plenary-busted-highlights*
+==============================================================================
+
+To configure winbar highlights you can change these groups:
+  `PlenaryBustedWhite`
+  `PlenaryBustedGreen`
+  `PlenaryBustedRed`
+
+
 KEYMAP                                                   *plenary-busted-plugs*
 ==============================================================================
 
