@@ -93,7 +93,7 @@ To configure winbar highlights you can change these groups:
 ### FAQ
 
 <details>
-<summary>How to use it to test your plugin with GitHub Actions?</summary>
+<summary>How to test your plugin with GitHub Actions?</summary>
 
 Create `Makefile` in your plugin's root directory:
 

@@ -203,7 +203,7 @@ it = M.it
 pending = M.pending
 before_each = M.before_each
 after_each = M.after_each
-clear = M.clear ---@diagnostic disable-line: lowercase-global
+clear = M.clear
 assert = require("luassert")
 
 ---@param file string
