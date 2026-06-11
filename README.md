@@ -130,7 +130,6 @@ jobs:
           git clone --depth=1 https://github.com/monkoose/plenary-busted ~/.local/share/nvim/site/pack/test-workflow/start/plenary-busted
       - name: Run tests
         run: |
-          nvim --version
           make test
 ```
 
