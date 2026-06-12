@@ -1,8 +1,6 @@
 local ansi = require("plenary-busted.ansi")
 local constants = require("plenary-busted.constants")
 
-local api = vim.api
-
 ---@param p string
 ---@return string
 local function dirname(p)
@@ -134,10 +132,6 @@ function M.after_each(fn)
   table.insert(current_after_each[#current_description], fn)
 end
 
-function M.clear()
-  api.nvim_buf_set_lines(0, 0, -1, false, {})
-end
-
 ---@param msg string
 ---@param tabs? number
 local function indent(msg, tabs)
@@ -203,7 +197,6 @@ it = M.it
 pending = M.pending
 before_each = M.before_each
 after_each = M.after_each
-clear = M.clear
 assert = require("luassert")
 
 ---@param file string

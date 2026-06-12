@@ -9,6 +9,7 @@ Changes from test harness of plenary.nvim:
 - Added `winbar` for floating window
 - Removed asynchronous running of tests (read this as `sequential` option is always enabled).
 - Renamed `<Plug>PlenaryTestFile` to `<Plug>PlenaryBustedFile`
+- Removed global `clear()` function. Just use api directly with `vim.api.nvim_buf_set_lines(0, 0, -1, false, {})` if you need it.
 
 ---
 
@@ -78,7 +79,6 @@ Supported busted items are:
 - `pending`
 - `before_each`
 - `after_each`
-- `clear`
 - `assert.*` etc. (from luassert, which is bundled)
 
 ### Highlights
@@ -144,7 +144,6 @@ Create `.luarc.json` in your plugin's root directory:
 {
   "$schema": "https://raw.githubusercontent.com/LuaLS/vscode-lua/master/setting/schema.json",
   "runtime.version": "LuaJIT",
-  "diagnostics.globals": [ "clear" ],
   "workspace": {
     "library": [
       "lua",
