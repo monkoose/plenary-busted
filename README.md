@@ -44,6 +44,8 @@ Supported busted items are:
 - `after_each`
 - `assert.*` etc. (from luassert, which is bundled)
 
+You can learn how to use them in [plenary-busted-testing] vimdoc help file.
+
 The plugin adds `:PlenaryBustedFile` and `:PlenaryBustedDirectory` user commands.
 
 <details>
@@ -177,3 +179,4 @@ Create `.luarc.json` in your plugin's root directory:
 MIT license
 
 [plenary.nvim]: https://github.com/nvim-lua/plenary.nvim
+[plenary-busted-testing]: https://github.com/monkoose/plenary-busted/blob/main/doc/plenary-busted-testing.txt

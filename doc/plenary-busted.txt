@@ -4,9 +4,8 @@ Supports (simple) busted-style testing. It implements a mock-ed busted
 interface, that will allow you to run simple busted style tests in separate
 neovim instances.
 
-
-USAGE                                                    *plenary-busted-usage*
 ==============================================================================
+USAGE                                                    *plenary-busted-usage*
 
 To run the current spec file in a floating window, you can use the keymap
 `<Plug>PlenaryBustedFile`. For example:
@@ -53,9 +52,8 @@ argument.
 The exit code is 0 for success and 1 for fail, so you can use it easily in
 a `Makefile`.
 
-
-SUPPORTED BUSTED ITEMS                                  *plenary-busted-busted*
 ==============================================================================
+SUPPORTED BUSTED ITEMS                                  *plenary-busted-busted*
 
 So far, the only supported busted items are:
 
@@ -66,9 +64,8 @@ So far, the only supported busted items are:
 - `after_each`
 - `assert.*` etc. (from luassert, which is bundled)
 
-
-COMMANDS                                              *plenary-busted-commands*
 ==============================================================================
+COMMANDS                                              *plenary-busted-commands*
 
 *:PlenaryBustedFile* {path}
 
@@ -81,26 +78,23 @@ COMMANDS                                              *plenary-busted-commands*
 
   {options} is a table, see |plenary-busted-usage|.
 
-
-HIGHLIGHTS                                          *plenary-busted-highlights*
 ==============================================================================
+HIGHLIGHTS                                          *plenary-busted-highlights*
 
 To configure winbar highlights you can change these groups:
   `PlenaryBustedWhite`
   `PlenaryBustedGreen`
   `PlenaryBustedRed`
 
-
-KEYMAP                                                   *plenary-busted-plugs*
 ==============================================================================
+KEYMAP                                                   *plenary-busted-plugs*
 
 <Plug>PlenaryBustedFile
 
   Can be used to run a test on a single file, with a minimal configuration.
 
-
-LICENSE                                                *plenary-busted-license*
 ==============================================================================
+LICENSE                                                *plenary-busted-license*
 
 MIT license
 

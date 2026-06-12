@@ -1,0 +1,443 @@
+*plenary-busted-testing*
+
+Explains how to use busted-style testing.
+It based on the original busted documentation
+https://lunarmodules.github.io/busted/
+
+==============================================================================
+ITEMS                                            *plenary-busted-testing-items*
+
+  `describe` - context block
+    Takes a title and a callback, and can be nested.
+
+  `it` - defining tests
+    Takes a title and a callback.
+>lua
+      describe("busted", function()
+        it("has tests", function()
+          local obj1 = { test = "yes" }
+          local obj2 = { test = "yes" }
+          assert.same(obj1, obj2)
+        end)
+      end)
+<
+  `pending` - placeholder.
+    Pending functions are placeholders for tests you plan to write later.
+>lua
+      describe("busted pending tests", function()
+        pending("I should finish this test later")
+      end)
+<
+  `before_each`
+    Runs before each child test.
+  `after_each`
+    Runs after each child test.
+>lua
+      describe("busted", function()
+        local obj1, obj2
+
+        before_each(function()
+          obj1 = { test = "yes" }
+          obj2 = { test = "yes" }
+        end)
+
+        it("sets up vars with the before_each", function()
+          obj2 = { test = "no" }
+          assert.are_not.same(obj1, obj2)
+        end)
+
+        it("sets up vars with the before_each", function()
+          -- obj2 is reset thanks to the before_each
+          assert.same(obj1, obj2)
+        end)
+
+        describe("nested", function()
+          it("also runs the before_each here", function()
+            -- if this describe also had a before_each, it would run
+            -- both, starting with the parents. You can go n-deep.
+          end)
+        end)
+      end)
+<
+==============================================================================
+ASSERTS                                        *plenary-busted-testing-asserts*
+
+Asserts are the core of busted-style testing; they're what you use to actually
+write your tests. They work by chaining a modifier value by using `is` or
+`is_not`, followed by the assert you wish to use.
+
+*plenary-busted* uses the luassert library to provide the assertions. Note
+that some of the assertion/modifiers are Lua keywords (true, false, nil,
+function, and not) and they cannot be used using `.` (dot) chaining because
+that results in errors. Instead chain using `_` (underscore) or use one or
+more capitals in the reserved word, whatever your coding style prefers.
+
+  `is` (aliases: `a`, `an`, `has`, `are`, `was`, `the`, `does` )
+    The assertion fails if it throws an error.
+    `is` and its aliases are always optional.
+  `is_not` or `is_no` (you can use any alias of `is` with `_not` or `_no`)
+    The assertion fails if it doesn't throw and error.
+>lua
+      describe("some assertions", function()
+        it("tests positive assertions", function()
+          assert.is_true(true)  -- Lua keyword chained with _
+          assert.True(true)     -- Lua keyword using a capital
+          assert.are.equal(1, 1)
+          assert.has.errors(function() error("this should fail") end)
+        end)
+
+        it("tests negative assertions", function()
+          assert.is_not_true(false)
+          assert.are_not.equals(1, "1")
+          assert.has_no.errors(function() end)
+        end)
+      end)
+<
+  `equals`
+    Takes 1-n arguments and checks if they are the same instance. This is
+    equivalent to calling `object1 == object2`.
+>lua
+      describe("some asserts", function()
+        it("checks if they're equals", function()
+          local expected = 1
+          local obj = expected
+          assert.are.equals(expected, obj)
+        end)
+      end)
+<
+  `same`
+    Takes 1-n arguments and checks if they are they are similar by doing a
+    deep compare.
+>lua
+      describe("some asserts", function()
+        it("checks if they're the same", function()
+          local expected = { name = "Jack" }
+          local obj = { name = "Jack" }
+          assert.are.same(expected, obj)
+        end)
+      end)
+<
+  `true
+    Evaluates if the value is the boolean true.
+  `truthy`
+    Checks if it's non-false and non-nil (as if you passed it into a boolean
+    expression in Lua.
+  `false`
+    Checks for the boolean false.
+  `falsy`
+    Checks for false or nil.
+>lua
+      describe("some asserts", function()
+        it("checks true", function()
+          assert.is_true(true)
+          assert.is.not_true("Yes")
+          assert.is.truthy("Yes")
+        end)
+
+        it("checks false", function()
+          assert.is_false(false)
+          assert.is.not_false(nil)
+          assert.is.falsy(nil)
+        end)
+      end)
+<
+  `error`
+    Makes sure an error exception is fired that you expect. Argument to
+    `error` must be a function reference.
+>lua
+      describe("some asserts", function()
+        it("should throw an error", function()
+          assert.has_error(function() error("Yup,  it errored") end)
+          assert.has_no.errors(function() end)
+        end)
+
+        it("should throw the error we expect", function()
+          local errfn = function()
+          error("DB CONN ERROR")
+          end
+          assert.has_error(errfn, "DB CONN ERROR")
+        end)
+      end)
+<
+------------------------------------------------------------------------------
+extending your own assertions
+
+It's easy to extend *plenary-busted* and add your own asserts by building an
+assert with a commmon signature and registering it.
+You can register error message keys for both positive `is` and negative
+`is_not` cases.
+>lua
+      local s = require("say")
+
+      local function has_property(state, arguments)
+        local has_key = false
+
+        if not type(arguments[1]) == "table" or #arguments ~= 2 then
+          return false
+        end
+
+        for key, value in pairs(arguments[1]) do
+          if key == arguments[2] then
+            has_key = true
+          end
+        end
+
+        return has_key
+      end
+
+      say:set("assertion.has_property.positive", "Expected %s \nto have property: %s")
+      say:set("assertion.has_property.negative", "Expected %s \nto not have property: %s")
+      assert:register("assertion", "has_property", has_property,
+        "assertion.has_property.positive", "assertion.has_property.negative")
+
+      describe("my table", function()
+        it("has a name property", function()
+          assert.has_property({ name = "Jack" }, "name")
+        end)
+      end)
+<
+==============================================================================
+SPIES                                            *plenary-busted-testing-spies*
+
+Spies are essentially wrappers around functions that keep track of data about
+how the function was called, and by default calls the function. Spies contain
+two methods: `on` and `new`. `spy.on(table, method_name)` does an in-place
+replacement of a table's method, and when the original method is called, it
+registers what it was called with and then calls the original function.
+>lua
+      describe("spies", function()
+        it("registers a new spy as a callback", function()
+          local s = spy.new(function() end)
+
+          s(1, 2, 3)
+          s(4, 5, 6)
+
+          assert.spy(s).was.called()
+          assert.spy(s).was.called(2) -- twice!
+          assert.spy(s).was.called_with(1, 2, 3) -- checks the history
+        end)
+
+        it("replaces an original function", function()
+          local t = {
+              greet = function(msg) print(msg) end
+          }
+
+          local s = spy.on(t, "greet")
+
+          t.greet("Hey!") -- prints 'Hey!'
+          assert.spy(t.greet).was_called_with("Hey!")
+
+          t.greet:clear()   -- clears the call history
+          assert.spy(s).was_not_called_with("Hey!")
+
+          t.greet:revert()  -- reverts the stub
+          t.greet("Hello!") -- prints 'Hello!', will not pass through the spy
+          assert.spy(s).was_not_called_with("Hello!")
+        end)
+      end)
+<
+==============================================================================
+STUBS                                            *plenary-busted-testing-stubs*
+
+Stubs act similarly to `spies`, except they do not call the function they
+replace. This is useful for testing things like data layers.
+>lua
+      describe("stubs", function()
+        it("replaces an original function", function()
+          local t = {
+              greet = function(msg) print(msg) end
+          }
+
+          stub(t, "greet")
+
+          t.greet("Hey!") -- DOES NOT print 'Hey!'
+          assert.stub(t.greet).was.called_with("Hey!")
+
+          t.greet:revert()  -- reverts the stub
+          t.greet("Hey!") -- DOES print 'Hey!'
+        end)
+      end)
+<
+==============================================================================
+MOCKS                                            *plenary-busted-testing-mocks*
+
+Mocks are tables whose functions have been wrapped in spies, or optionally
+stubs. This is useful for checking execution chains. Wrapping is recursive, so
+wrapping functions in sub-tables as well. `mock(table, stub)` returns a table
+whose functions have been wrapped in spies or stubs.
+
+>lua
+      describe("mocks", function()
+        it("replaces a table with spies", function()
+          local t = {
+            thing = function(msg) print(msg) end
+          }
+
+          local m = mock(t) -- mocks the table with spies, so it will print
+
+          m.thing("Coffee")
+          assert.spy(m.thing).was.called_with("Coffee")
+        end)
+
+        it("replaces a table with stubs", function()
+          local t = {
+            thing = function(msg) print(msg) end
+          }
+
+          local m = mock(t, true) -- mocks the table with stubs, so it will not print
+
+          m.thing("Coffee")
+          assert.stub(m.thing).was.called_with("Coffee")
+          mock.revert(m) -- reverts all stubs/spies in m
+          m.thing("Tea") -- DOES print 'Tea'
+        end)
+      end)
+<
+==============================================================================
+MATCHERS                                       *plenary-busted-testing-matches*
+Matchers are used to provide flexible argument matching for `called_with` and
+`returned_with` asserts. Just like with asserts, you can chain a modifier
+value using `is` or `is_not`, followed by the matcher you wish to use.
+>lua
+      describe("match arguments", function()
+        local match = require("luassert.match")
+
+        it("tests wildcard matcher", function()
+          local s = spy.new(function() end)
+          local _ = match._
+
+          s("foo")
+
+          assert.spy(s).was_called_with(_)        -- matches any argument
+          assert.spy(s).was_not_called_with(_, _) -- does not match two arguments
+        end)
+
+        it("tests type matchers", function()
+          local s = spy.new(function() end)
+
+          s("foo")
+
+          assert.spy(s).was_called_with(match.is_string())
+          assert.spy(s).was_called_with(match.is_truthy())
+          assert.spy(s).was_called_with(match.is_not_nil())
+          assert.spy(s).was_called_with(match.is_not_false())
+          assert.spy(s).was_called_with(match.is_not_number())
+          assert.spy(s).was_called_with(match.is_not_table())
+        end)
+
+        it("tests more matchers", function()
+          local s = spy.new(function() end)
+
+          s(1)
+
+          assert.spy(s).was_called_with(match.is_equal(1))
+          assert.spy(s).was_called_with(match.is_same(1))
+        end)
+      end)
+<
+------------------------------------------------------------------------------
+Reference Matchers
+
+If you're creating a spy for functions that mutate any properties on an table
+(for example `self`) and you want to use `was_called_with`, you should use
+`match.is_ref(obj)`.
+>lua
+      describe("combine matchers", function()
+        local match = require("luassert.match")
+
+        it("tests ref matchers for passed in table", function()
+          local t = { cnt = 0, }
+          function t.incrby(t, i) t.cnt = t.cnt + i end
+
+          local s = spy.on(t, "incrby")
+
+          s(t, 2)
+
+          assert.spy(s).was_called_with(match.is_ref(t), 2)
+        end)
+
+        it("tests ref matchers for self", function()
+          local t = { cnt = 0, }
+          function t:incrby(i) self.cnt = self.cnt + i end
+
+          local s = spy.on(t, "incrby")
+
+          t:incrby(2)
+
+          assert.spy(s).was_called_with(match.is_ref(t), 2)
+        end)
+      end)
+<
+------------------------------------------------------------------------------
+Composite Matchers
+
+Combine matchers using composite matchers.
+>lua
+      describe("combine matchers", function()
+        local match = require("luassert.match")
+
+        it("tests composite matchers", function()
+          local s = spy.new(function() end)
+
+          s("foo")
+
+          assert.spy(s).was_called_with(
+            match.is_all_of(match.is_not_nil(),
+            match.is_not_number())
+          )
+          assert.spy(s).was_called_with(
+            match.is_any_of(match.is_number(),
+            match.is_string(),
+            match.is_boolean()))
+          )
+          assert.spy(s).was_called_with(
+            match.is_none_of(match.is_number(),
+            match.is_table(),
+            match.is_boolean()))
+          )
+        end)
+      end)
+<
+------------------------------------------------------------------------------
+Extending Your Own Matchers
+
+Add in your own matchers to reuse commonly written code. Note that only when
+boolean true returned, it is considered a match. For example, you should write
+`value:find(sub) ~= nil` instead of just `value:find(sub)`.
+>lua
+      local function is_even(state, arguments)
+        return function(value)
+          return (value %2) == 0
+        end
+      end
+
+      local function is_gt(state, arguments)
+        local expected = arguments[1]
+        return function(value)
+          return value > expected
+        end
+      end
+
+      assert:register("matcher", "even", is_even)
+      assert:register("matcher", "gt", is_gt)
+
+      describe("custom matchers", function()
+        it("match even", function()
+          local s = spy.new(function() end)
+
+          s(2)
+
+          assert.spy(s).was_called_with(match.is_even())
+        end)
+
+        it("match greater than", function()
+          local s = spy.new(function() end)
+
+          s(10)
+
+          assert.spy(s).was_called_with(match.is_gt(5))
+        end)
+      end)
+<
+==============================================================================
+vim:tw=78:ft=help:norl:et:ts=2:sw=2:fen:fdl=0:
