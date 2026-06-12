@@ -9,7 +9,8 @@ Changes from test harness of plenary.nvim:
 - Added `winbar` for floating window
 - Removed asynchronous running of tests (read this as `sequential` option is always enabled).
 - Renamed `<Plug>PlenaryTestFile` to `<Plug>PlenaryBustedFile`
-- Removed global `clear()` function. Just use api directly with `vim.api.nvim_buf_set_lines(0, 0, -1, false, {})` if you need it.
+- Removed global `clear()` function. Just use api directly with
+  `vim.api.nvim_buf_set_lines(0, 0, -1, false, {})` if you need it.
 
 ---
 
@@ -31,55 +32,59 @@ With [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ### Usage
 
-Supports (simple) busted-style testing. It implements a mock-ed busted interface, that will allow you to run simple
-busted style tests in separate neovim instances.
-
-To run the current spec file in a floating window, you can use the keymap `<Plug>PlenaryBustedFile`. For example:
-
-```
-nmap <leader>t <Plug>PlenaryBustedFile
-```
-or in lua
-
-```lua
-vim.keymap.set('n', '<leader>t', '<Plug>PlenaryBustedFile')
-```
-
-or use `:PlenaryBustedFile` command
-
-In this case, the test is run with a minimal configuration, that includes in
-its runtimepath only `plenary-busted` and the current working directory.
-
-To run a whole directory from the command line, you could do something like:
-
-```
-nvim --headless -c "PlenaryBustedDirectory tests/plenary/ {options}"
-```
-
-Where the first argument is the directory you'd like to test. It will search for files with
-the pattern `*_spec.lua` and execute them in separate neovim instances.
-
-Without second argument, `PlenaryBustedDirectory` is also run with a minimal
-configuration. Otherwise it is a Lua option table with the following fields:
-- `nvim_cmd`: specify the command to launch this neovim instance (defaults to `vim.v.progpath`)
-- `init`: specify an init.vim to use for this instance
-- `minimal_init`: as for `init`, but also run the neovim instance with `--noplugin`
-- `keep_going`: if `sequential`, whether to continue on test failure (default true)
-- `timeout`: controls the maximum time allotted to each job in parallel or
-  sequential operation (defaults to 50,000 milliseconds)
-
-The exit code is 0 when success and 1 when fail, so you can use it easily in a `Makefile`!
-
-NOTE:
+`plenary-busted` provides (simple) busted-style testing. It implements a
+mock-ed busted interface, that will allow you to run simple busted style tests
+in separate neovim instances.
 
 Supported busted items are:
-
 - `describe`
 - `it`
 - `pending`
 - `before_each`
 - `after_each`
 - `assert.*` etc. (from luassert, which is bundled)
+
+The plugin adds `:PlenaryBustedFile` and `:PlenaryBustedDirectory` user commands.
+
+<details>
+<summary><b>User commands help</b></summary>
+
+#### To run the current spec file in a floating window
+
+Use `:PlenaryBustedFile %` command or add the keymap `<Plug>PlenaryBustedFile`. For example:
+
+```lua
+vim.keymap.set('n', '<leader>t', '<Plug>PlenaryBustedFile')
+```
+
+In this case, the test is run with a minimal configuration, that includes in
+its runtimepath only `plenary-busted` and the current working directory.
+
+#### To run a whole directory
+
+Use `:PlenaryBustedDirectory {path} {options}` command.
+
+Where the first argument is the directory you'd like to test. It will search for files with
+the pattern `*_spec.lua` and execute them in separate neovim instances.
+
+Without second argument, `PlenaryBustedDirectory` is also run with a minimal
+configuration. Otherwise it is a Lua option table with the following fields:
+- `init`: specify an init.lua to use for this instance
+- `minimal_init`: as for `init`, but also run the neovim instance with `--noplugin`
+- `nvim_cmd`: specify the command to launch this neovim instance (defaults to `vim.v.progpath`)
+- `keep_going`: whether to continue on test failure (default true)
+- `timeout`: controls the maximum time allotted to each job in parallel or
+  sequential operation (defaults to 50,000 milliseconds)
+
+Or run it from command line:
+
+```
+nvim --headless -c "PlenaryBustedDirectory tests/plenary/ {options}"
+```
+
+The exit code is `0` when success and `1` when any test fail, so you can use it easily in a `Makefile`.
+
+</details>
 
 ### Highlights
 
@@ -93,7 +98,7 @@ To configure winbar highlights you can change these groups:
 ### FAQ
 
 <details>
-<summary>How to test your plugin with GitHub Actions?</summary>
+<summary><b>How to test your plugin with GitHub Actions?</b></summary>
 
 Create `Makefile` in your plugin's root directory:
 
@@ -102,8 +107,9 @@ test:
 	nvim --headless -c "PlenaryBustedDirectory tests { keep_going = false }"
 ```
 
-Or you can omit creating `Makefile` and use `nvim --headless -c "PlenaryBustedDirectory tests { keep_going = false }"`
-directly in the `tests.yml`.
+Or you can omit creating `Makefile` and use `nvim --headless -c
+"PlenaryBustedDirectory tests { keep_going = false }"` directly in the
+`tests.yml`.
 
 Create `.github/workflows/tests.yml` (adjust `nvim-version` for your plugin requirements):
 
@@ -136,7 +142,7 @@ jobs:
 </details>
 
 <details>
-<summary>How to make Lua LSP know about `plenary-busted` (to fix diagnostics warnings)?</summary>
+<summary><b>How to make Lua LSP know about `plenary-busted` (to fix diagnostics warnings)?</b></summary>
 
 Create `.luarc.json` in your plugin's root directory:
 
