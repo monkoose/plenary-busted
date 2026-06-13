@@ -64,7 +64,6 @@ In this case, the test is run with a minimal configuration, that includes in
 its runtimepath only `plenary-busted` and the current working directory.
 
 Or you can specify a filename to test with `:PlenaryBusted {path/to/file} {options}`.
-Make sure it ends with `_spec.lua`.
 
 #### To run a whole directory
 
