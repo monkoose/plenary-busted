@@ -114,24 +114,28 @@ test:
 	nvim --headless -c "PlenaryBusted tests { keep_going = false }"
 ```
 
-Or you can omit creating `Makefile` and use `nvim --headless -c "PlenaryBusted
-tests { keep_going = false }"` directly in the `tests.yml`.
-
-Create `.github/workflows/tests.yml` (adjust `nvim-version` for your plugin
-requirements):
+Create `.github/workflows/tests.yml` (change matrix `os` and `nvim-version` for
+your plugin testing requirements):
 
 ```yaml
-name: Tests
+name: tests
 
 on: [ push, pull_request ]
 
 jobs:
   tests:
     name: unit tests
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        nvim-version: [ v0.11.0, stable, nightly ]
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        nvim-version:
+          - v0.11.0
+          - stable
+          - nightly
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
       - uses: rhysd/action-setup-vim@v1
@@ -139,8 +143,14 @@ jobs:
           neovim: true
           version: ${{ matrix.nvim-version }}
       - name: Install plenary-busted plugin
+        shell: bash
         run: |
-          git clone --depth=1 https://github.com/monkoose/plenary-busted ~/.local/share/nvim/site/pack/test-workflow/start/plenary-busted
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            packpath="$HOME/AppData/Local/nvim-data/site"
+          else
+            packpath="$HOME/.local/share/nvim/site"
+          fi
+          git clone --depth=1 https://github.com/monkoose/plenary-busted "$packpath/pack/test-workflow/start/plenary-busted"
       - name: Run tests
         run: |
           make test
