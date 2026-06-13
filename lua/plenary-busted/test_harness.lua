@@ -170,12 +170,15 @@ local function test_files(files, opts)
     end
 
     if HEADLESS then
-      outputter(bufnr, "\n", constants.DOUBLE_LINE, "\n")
-      outputter(bufnr, ansi.format(ansi.BOLD, " SUMMARY"), "\n")
-      outputter(bufnr, constants.SINGLE_LINE, "\n")
-      outputter(bufnr, string.format(constants.RES_SUCCESS .. "\t%d\n", summary.pass))
-      outputter(bufnr, string.format(constants.RES_FAILED .. "\t%d\n", summary.fail))
-      outputter(bufnr, string.format(constants.RES_ERRORS .. "\t%d\n\n", summary.errs))
+      -- Add summary for multiple files
+      if #files > 1 then
+        outputter(bufnr, "\n", constants.DOUBLE_LINE, "\n")
+        outputter(bufnr, ansi.format(ansi.BOLD, " SUMMARY"), "\n")
+        outputter(bufnr, constants.SINGLE_LINE, "\n")
+        outputter(bufnr, string.format(constants.RES_SUCCESS .. "\t%d\n", summary.pass))
+        outputter(bufnr, string.format(constants.RES_FAILED .. "\t%d\n", summary.fail))
+        outputter(bufnr, string.format(constants.RES_ERRORS .. "\t%d\n\n", summary.errs))
+      end
 
       if failure then
         vim.cmd.cquit(1)
@@ -189,25 +192,21 @@ local function test_files(files, opts)
   end)
 end
 
----@param filepath string
-function M.test_file(filepath)
-  test_files({ vim.fs.normalize(fn.expand(filepath)) })
-end
-
----@param directory string
----@param opts table
-function M.test_directory(directory, opts)
-  if fn.isdirectory(directory) == 0 then
-    vim.notify(string.format(" Directory '%s' does not exist.", directory), vim.log.levels.WARN)
+---@param path string
+---@param opts? table
+function M.test(path, opts)
+  if fn.isdirectory(path) == 1 then
+    local files = find_test_files(path)
+    test_files(files, opts)
+  elseif fn.filereadable(path) == 1 then
+    test_files({ vim.fs.normalize(path) }, opts)
+  else
+    vim.notify(string.format(" Path '%s' does not exist.", path), vim.log.levels.WARN)
     if HEADLESS then
       vim.notify("\n")
       vim.cmd.cquit(1)
     end
-    return
   end
-
-  local files = find_test_files(directory)
-  test_files(files, opts)
 end
 
 return M

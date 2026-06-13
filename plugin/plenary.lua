@@ -1,28 +1,25 @@
 local api = vim.api
 local expand = vim.fn.expand
 
-api.nvim_create_user_command("PlenaryBustedFile", function(opts)
-  require("plenary-busted.test_harness").test_file(opts.fargs[1])
-end, {
-  nargs = 1,
-  complete = "file",
-  desc = "Run a single busted test file.",
-})
-
-api.nvim_create_user_command("PlenaryBustedDirectory", function(opts)
-  local directory = expand(table.remove(opts.fargs, 1))
-  local test_opts = assert(loadstring("return " .. table.concat(opts.fargs, " ")))()
+api.nvim_create_user_command("PlenaryBusted", function(opts)
+  local path, test_opts
+  if #opts.fargs == 0 then
+    path = expand("%")
+  else
+    path = expand(table.remove(opts.fargs, 1))
+    test_opts = assert(loadstring("return " .. table.concat(opts.fargs, " ")))()
+  end
 
   ---@diagnostic disable-next-line: param-type-mismatch
-  require("plenary-busted.test_harness").test_directory(directory, test_opts)
+  require("plenary-busted.test_harness").test(path, test_opts)
 end, {
-  nargs = "+",
-  complete = "dir",
-  desc = "Run a directory of busted test files.",
+  nargs = "*",
+  complete = "file",
+  desc = "Run a single test file or a directory of test files.",
 })
 
 vim.keymap.set("n", "<Plug>PlenaryBustedFile", function()
-  require("plenary-busted.test_harness").test_file(expand("%:p"))
+  require("plenary-busted.test_harness").test(expand("%"))
 end)
 
 local augroup = api.nvim_create_augroup("PlenaryBusted", {})
