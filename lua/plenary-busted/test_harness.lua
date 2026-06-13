@@ -132,7 +132,10 @@ local function test_files(files, opts)
       local cmd = vim.deepcopy(args)
       table.insert(
         cmd,
-        string.format('lua require("plenary-busted").run("%s")', file:gsub("\\", "\\\\"))
+        string.format(
+          'lua require("plenary-busted").run("%s")',
+          vim.fs.abspath(file):gsub("\\", "\\\\")
+        )
       )
 
       local out = vim.system(cmd, { text = true }):wait(opts.timeout)
