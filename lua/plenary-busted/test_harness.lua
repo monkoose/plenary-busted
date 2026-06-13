@@ -130,7 +130,10 @@ local function test_files(files, opts)
   vim.schedule(function()
     for _, file in ipairs(files) do
       local cmd = vim.deepcopy(args)
-      table.insert(cmd, string.format('lua require("plenary-busted").run("%s")', file))
+      table.insert(
+        cmd,
+        string.format('lua require("plenary-busted").run("%s")', fn.fnameescape(file))
+      )
 
       local out = vim.system(cmd, { text = true }):wait(opts.timeout)
 

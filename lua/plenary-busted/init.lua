@@ -201,8 +201,6 @@ assert = require("luassert")
 
 ---@param file string
 M.run = function(file)
-  file = file:gsub("\\", "/")
-
   print()
   print(constants.DOUBLE_LINE)
   print(ansi.format(ansi.BOLD, " " .. file))
