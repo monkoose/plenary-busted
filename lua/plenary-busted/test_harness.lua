@@ -35,6 +35,7 @@ local function find_test_files(directory)
     type = "file",
     limit = math.huge,
   })
+  table.sort(test_files)
   return test_files
 end
 
@@ -130,10 +131,7 @@ local function test_files(files, opts)
   vim.schedule(function()
     for _, file in ipairs(files) do
       local cmd = vim.deepcopy(args)
-      table.insert(
-        cmd,
-        string.format('lua require("plenary-busted").run("%s")', fn.fnameescape(file))
-      )
+      table.insert(cmd, string.format('lua require("plenary-busted").run(%s)', vim.inspect(file)))
 
       local out = vim.system(cmd, { text = true }):wait(opts.timeout)
 
@@ -141,7 +139,7 @@ local function test_files(files, opts)
       outputter(bufnr, out.stdout)
 
       -- Failed to load file
-      if out.code == 3 then
+      if out.code == 3 or out.code == 124 then
         summary.errs = summary.errs + 1
       else
         if out.code == 2 then

@@ -15,9 +15,12 @@ local function get_traceback(level)
   local thisdir = dirname(debug.getinfo(1, "Sl").source)
   local debug_info = debug.getinfo(level, "Sl")
   while
-    debug_info.what == "C"
-    or debug_info.short_src:match("luassert[/\\].*%.lua$")
-    or (debug_info.source:sub(1, 1) == "@" and thisdir == dirname(debug_info.source))
+    debug_info
+    and (
+      debug_info.what == "C"
+      or debug_info.short_src:match("luassert[/\\].*%.lua$")
+      or (debug_info.source:sub(1, 1) == "@" and thisdir == dirname(debug_info.source))
+    )
   do
     level = level + 1
     debug_info = debug.getinfo(level, "Sl")
@@ -30,8 +33,9 @@ end
 
 -- We are shadowing print so people can reliably print messages
 print = function(...)
-  for _, v in ipairs({ ... }) do
-    io.stdout:write(tostring(v))
+  local n = select("#", ...)
+  for i = 1, n do
+    io.stdout:write(tostring(select(i, ...)))
     io.stdout:write("\t")
   end
 
@@ -70,6 +74,9 @@ local function call_inner(desc, func)
   add_new_each()
   local ok, msg = xpcall(func, function(msg)
     local traceback = get_traceback(3)
+    if type(msg) ~= "string" then
+      msg = vim.inspect(msg)
+    end
     return msg .. "\n" .. traceback
   end)
   clear_last_each()
@@ -79,7 +86,7 @@ local function call_inner(desc, func)
 end
 
 local M = {}
-local results = {}
+local results = { pass = {}, fail = {}, errs = {} }
 
 ---@param res table
 function M.format_results(res)
@@ -93,10 +100,6 @@ end
 ---@param desc string
 ---@param func function
 function M.describe(desc, func)
-  results.pass = results.pass or {}
-  results.fail = results.fail or {}
-  results.errs = results.errs or {}
-
   describe = M.inner_describe
   local ok, msg, desc_stack = call_inner(desc, func)
   describe = M.describe
@@ -124,11 +127,13 @@ end
 
 ---@param fn function
 function M.before_each(fn)
+  assert(#current_description > 0, "before_each must be called inside describe")
   table.insert(current_before_each[#current_description], fn)
 end
 
 ---@param fn function
 function M.after_each(fn)
+  assert(#current_description > 0, "after_each must be called inside describe")
   table.insert(current_after_each[#current_description], fn)
 end
 
@@ -214,10 +219,16 @@ M.run = function(file)
     return vim.cmd.cquit(3)
   end
 
-  loaded() ---@diagnostic disable-line: need-check-nil
+  local ok, run_err = pcall(loaded) ---@diagnostic disable-line: param-type-mismatch
+  if not ok then
+    print(ansi.format(ansi.RED, "Error: FAILED TO RUN FILE"))
+    print(run_err)
+    print()
+    return vim.cmd.cquit(3)
+  end
 
   -- When nothing was run (empty file without top level describe)
-  if not results.pass then
+  if #results.pass + #results.fail + #results.errs == 0 then
     print(" Tests are empty.")
     return vim.cmd.cquit(0)
   end
